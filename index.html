@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nelis' tv</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nelis' tv">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fff6f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17121a" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png">
+<style>
+  @font-face {
+    font-family: "League Spartan";
+    src: url("LeagueSpartan-Bold.otf") format("opentype");
+    font-weight: 700;
+    font-display: swap;
+  }
+  :root {
+    --bg: #fff6f1;
+    --card: #ffffff;
+    --text: #2a1d24;
+    --muted: #8a7680;
+    --line: #f0e2dc;
+    --accent: #e8466f;
+    --accent-2: #ff7a59;
+    --on: #22c55e;
+    --off: #ef4444;
+    --shadow: 0 10px 30px rgba(214, 51, 108, .10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17121a;
+      --card: #231b26;
+      --text: #f6eef2;
+      --muted: #a99aa3;
+      --line: #33283a;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 17px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  }
+  main { max-width: 440px; margin: 0 auto; display: grid; gap: 16px; }
+  h1, .state {
+    font-family: "League Spartan", -apple-system, sans-serif;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  h1 { font-size: 30px; margin: 8px 4px 4px; }
+  .card {
+    background: var(--card);
+    border-radius: 22px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--line);
+  }
+
+  /* Status */
+  .status { display: flex; align-items: center; gap: 16px; }
+  .dot {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--muted);
+    transition: background .4s;
+  }
+  .dot.on { background: var(--on); animation: pulse 2.4s ease-out infinite; }
+  .dot.off { background: var(--off); }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, .55); }
+    70% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+  .state { font-size: 24px; line-height: 1.15; }
+  .since { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+  /* Berichtjes */
+  .label { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+  .emojis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .emojis button {
+    font-size: 34px; line-height: 1; padding: 14px 0;
+    border: 1px solid var(--line); border-radius: 16px;
+    background: var(--bg); cursor: pointer;
+    transition: transform .12s;
+  }
+  .emojis button:active { transform: scale(.9); }
+  .divider { height: 1px; background: var(--line); margin: 18px 0; }
+  form { display: grid; gap: 10px; }
+  .field { position: relative; }
+  input[type=text] {
+    width: 100%; font: inherit; color: var(--text);
+    padding: 14px 64px 14px 16px;
+    border: 1px solid var(--line); border-radius: 16px;
+    background: var(--bg); outline: none;
+  }
+  input[type=text]:focus { border-color: var(--accent); }
+  .count {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .count.full { color: var(--accent); }
+  .send {
+    font: inherit; font-weight: 600; color: #fff;
+    border: 0; border-radius: 16px; padding: 15px;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    cursor: pointer;
+  }
+  .send:disabled { opacity: .45; }
+  .note { font-size: 14px; color: var(--muted); margin: 10px 2px 0; min-height: 1.4em; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: max(28px, env(safe-area-inset-bottom));
+    transform: translate(-50%, 20px); opacity: 0;
+    background: var(--text); color: var(--bg);
+    padding: 12px 20px; border-radius: 999px; font-weight: 600;
+    transition: opacity .25s, transform .25s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .tip { font-size: 14px; color: var(--muted); text-align: center; padding: 0 12px; }
+  .broken { text-align: center; padding: 40px 20px; }
+  .broken .big { font-size: 48px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nelis' tv</h1>
+
+  <div id="broken" class="card broken" hidden>
+    <div class="big">🔒</div>
+    <p>Deze link werkt niet.<br>Vraag Nelis om de juiste link.</p>
+  </div>
+
+  <section id="app" hidden>
+    <div class="card status" aria-live="polite">
+      <div id="dot" class="dot"></div>
+      <div>
+        <div id="state" class="state">Even kijken…</div>
+        <div id="since" class="since">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <p class="label">Stuur iets naar de tv</p>
+      <div class="emojis" id="emojis"></div>
+      <div class="divider"></div>
+      <form id="form" autocomplete="off">
+        <div class="field">
+          <input id="text" type="text" placeholder="Typ een berichtje…" enterkeyhint="send">
+          <span id="count" class="count">0/50</span>
+        </div>
+        <button id="send" class="send" type="submit" disabled>Stuur naar tv 📺</button>
+      </form>
+      <p id="note" class="note"></p>
+    </div>
+
+    <p id="tip" class="tip" hidden style="margin-top:16px">
+      Tip: tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>,
+      dan heb je dit als appje op je iPhone.
+    </p>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+  // Het geheim staat alleen in de link (na de #), nooit in deze pagina zelf.
+  const SECRET = decodeURIComponent(location.hash.slice(1));
+  const SERVER = "https://ntfy.sh/";
+  const MAX = 50;
+  const STALE_S = 16 * 60; // de tv meldt zich minstens elke 15 minuten
+  const EMOJIS = ["😘", "❤️", "😂", "🍕", "😴", "👋", "🥺", "🔥"];
+  const STATES = {
+    tv:   { text: "Nelis kijkt TV",             on: true },
+    game: { text: "Nelis speelt een spelletje", on: true },
+    off:  { text: "Nelis is offline",           on: false },
+  };
+
+  const $ = (id) => document.getElementById(id);
+  let online = false;
+  let busy = false;
+
+  if (!/^[A-Za-z0-9_-]{16,64}$/.test(SECRET)) {
+    $("broken").hidden = false;
+  } else {
+    $("app").hidden = false;
+    start();
+  }
+
+  function start() {
+    for (const e of EMOJIS) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = e;
+      b.setAttribute("aria-label", "Stuur " + e);
+      b.onclick = () => send(e);
+      $("emojis").appendChild(b);
+    }
+
+    $("text").addEventListener("input", onType);
+    $("form").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const t = $("text").value.trim();
+      if (t) send(t).then((ok) => { if (ok) { $("text").value = ""; onType(); } });
+    });
+
+    const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    $("tip").hidden = !(ios && !standalone);
+
+    refresh();
+    setInterval(() => { if (!document.hidden) refresh(); }, 10000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+  }
+
+  // Tekens tellen zoals de tv dat doet: een emoji telt als één.
+  function onType() {
+    let chars = Array.from($("text").value);
+    if (chars.length > MAX) {
+      chars = chars.slice(0, MAX);
+      $("text").value = chars.join("");
+    }
+    $("count").textContent = chars.length + "/" + MAX;
+    $("count").classList.toggle("full", chars.length === MAX);
+    $("send").disabled = busy || $("text").value.trim() === "";
+  }
+
+  async function refresh() {
+    try {
+      const r = await fetch(SERVER + SECRET + "-status/json?poll=1&since=latest", { cache: "no-store" });
+      const lines = (await r.text()).trim().split("\n").filter(Boolean);
+      let state = "off", time = 0, since = 0;
+      if (lines.length) {
+        const ev = JSON.parse(lines[lines.length - 1]);
+        time = ev.time || 0;
+        try {
+          const m = JSON.parse(ev.message);
+          state = m.s || "off";
+          since = m.t || time;
+        } catch (_) {}
+      }
+      // Niets meer gehoord (stroom weg, wifi weg)? Dan is de tv offline sinds het laatste teken.
+      if (!time || Date.now() / 1000 - time > STALE_S || !STATES[state]) {
+        if (state !== "off") since = time;
+        state = "off";
+      }
+      show(state, since);
+    } catch (_) {
+      $("since").textContent = "Geen verbinding, ik probeer opnieuw…";
+    }
+  }
+
+  function show(state, time) {
+    const s = STATES[state];
+    online = s.on;
+    $("state").textContent = s.text;
+    $("dot").className = "dot " + (s.on ? "on" : "off");
+    $("since").textContent = time ? sinceText(time, s.on) : " ";
+    $("note").textContent = s.on ? "" : "De tv staat uit. Nelis ziet je berichtje dan niet.";
+  }
+
+  function sinceText(time, on) {
+    const d = new Date(time * 1000);
+    const hm = d.toLocaleTimeString("nl-BE", { hour: "2-digit", minute: "2-digit" });
+    const today = new Date().toDateString() === d.toDateString();
+    const when = today ? hm : d.toLocaleDateString("nl-BE", { weekday: "long" }) + " " + hm;
+    return (on ? "Sinds " : "Laatst gezien ") + when;
+  }
+
+  async function send(text) {
+    if (busy) return false;
+    busy = true;
+    onType();
+    try {
+      const r = await fetch(SERVER + SECRET + "-msg", { method: "POST", body: text });
+      if (!r.ok) throw new Error(r.status);
+      toast(online ? "Verstuurd! 💌" : "Verstuurd, maar de tv staat uit");
+      return true;
+    } catch (_) {
+      toast("Oei, dat lukte niet. Probeer nog eens.");
+      return false;
+    } finally {
+      setTimeout(() => { busy = false; onType(); }, 1500);
+    }
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+</script>
+</body>
+</html>

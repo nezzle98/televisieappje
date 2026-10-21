@@ -1,7 +1,8 @@
 # Nelis' tv
 
-Web-app voor Elisa: zie of de tv van Nelis aan staat (tv kijken of PlayStation)
-en stuur een emoji of een berichtje van max. 50 tekens naar de tv.
+Web-app voor vrienden van Nelis (Prinsesje, Hondenprins): zie of de tv van Nelis aan
+staat (tv kijken of PlayStation) en stuur een emoji of een berichtje van max. 50 tekens
+naar de tv. Iedereen gebruikt dezelfde pagina, met een eigen geheime link.
 
 - De tv-kant zit in de app *Thuis* (privé repository).
 - Doorgeefluik: [ntfy.sh](https://ntfy.sh), topics `<geheim>-status` en `<geheim>-msg`.
